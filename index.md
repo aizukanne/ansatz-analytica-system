@@ -6,7 +6,7 @@ layout: default
 
 # Ansatz Analytica Points System
 
-The *Ansatz Analytica Points System (AAPS)* is an alternative method for evaluating team performance and predicting outcomes in football (soccer), combining statistical smoothing, probabilistic inference, and customized scoring rules.
+The *Ansatz Analytica Points System (AAPS)* is an alternative method for evaluating team performance and predicting outcomes in football (soccer), combining statistical smoothing, probabilistic inference, and customized scoring rules. Designed to enhance predictive accuracy and account for contextual variability across matches and leagues, AAPS provides a dynamic and adaptive framework for understanding team strength over time.
 
 ## Overview
 
@@ -16,7 +16,7 @@ Unlike traditional point systems that use static values (e.g., 3 points for a wi
 
 ### Exponential Smoothing
 
-Used to emphasize recent performance:
+AAPS uses exponential smoothing to give more weight to recent match results. This is useful for capturing momentum or decline:
 
 ```
 Smoothed Value = α × current_value + (1 − α) × previous_smoothed_value
@@ -24,7 +24,11 @@ Smoothed Value = α × current_value + (1 − α) × previous_smoothed_value
 
 ### Bayesian Smoothing
 
-Incorporates prior knowledge with sample data:
+Bayesian smoothing incorporates prior knowledge with sample data. It accounts for sample size and prior expectations. It is applied in two forms:
+
+Rate smoothing (e.g., goals per game): a weighted average of observed values and league priors.
+
+Binary smoothing (e.g., games scored, clean sheets): calculates smoothed probabilities from binary outcomes using league-wide priors.
 
 - For rate (e.g., goals/game):  
 ```
@@ -35,13 +39,15 @@ smoothed = (prior_mean × prior_weight + sample_mean × sample_size) / (prior_we
   Similar logic using success counts.
 
 ## Metrics Tracked
-
+For each team, the system analyzes:
 - Goals scored/conceded
 - Games with goals (binary)
 - Clean sheets (binary)
 - Total games played
+These statistics are smoothed using either exponential or Bayesian techniques, depending on the data size and configuration.
 
 ## Venue-Aware Points
+AAPS modifies the classic point allocation by factoring in match venue, assigning different weights to wins, draws, and losses:
 
 | Outcome | Home | Away |
 |--------|------|------|
@@ -49,26 +55,40 @@ smoothed = (prior_mean × prior_weight + sample_mean × sample_size) / (prior_we
 | Draw   | 1    | 2    |
 | Loss   | -1   | 0    |
 
+This design penalizes underperformance at home and rewards overperformance away, enhancing competitive context.
+
 ## Performance Ratio
+Each match is assigned a max possible point value based on its venue. A team’s smoothed points total is normalized by its smoothed maximum to yield:
 
 ```
 Performance Ratio = Smoothed Points / Smoothed Max Points
 ```
 
-Calculated separately for home, away, and total.
+Separate performance ratios are computed for home, away, and overall records.
 
 ## Expected Goals (λ)
 
-AAPS uses:
+AAPS estimates the expected number of goals using a compound lambda (λ) formulation:
 
-- Scoring & conceding rates
-- Scoring probabilities
-- Clean sheet tendencies
-- League multipliers
+- Team's smoothed goal scoring rate
+- Opponent's smoothed conceding rate
+- Probability of team scoring
+- Probability of opponent not keeping a clean sheet
+- League-specific multiplier and venue-based adjustments
 
-## Goal Prediction
+This  value feeds into a probabilistic goal model.
+
+## Probabilistic Goal Modeling
 
 ### Negative Binomial Model
+AAPS uses the Negative Binomial Distribution to model the number of goals scored. This distribution accounts for overdispersion, a common phenomenon in football data where variance exceeds the mean.
+
+```
+
+
+
+
+```
 
 For goals `k`:
 ```
